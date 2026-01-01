@@ -1,5 +1,4 @@
 import json
-import hashlib
 import os
 
 DATABASE = "data_store.json"
