@@ -1,6 +1,5 @@
 import json
 import os
-import hashlib
 
 DATABASE = "data_store.json"
 
@@ -8,7 +7,10 @@ def load_data():
     if not os.path.exists(DATABASE):
         return []
     with open(DATABASE, "r") as file:
-        return json.load(file)
+        try:
+            return json.load(file)
+        except json.JSONDecodeError:
+            return []
 
 def save_data(data):
     with open(DATABASE, "w") as file:
@@ -23,14 +25,9 @@ def validate_record(record):
         return False
     return True
 
-def generate_hash(record):
-    raw = f"{record['id']}-{record['email']}"
-    return hashlib.sha256(raw.encode()).hexdigest()
-
-def is_redundant(record, database):
-    record_hash = generate_hash(record)
+def is_duplicate(record, database):
     for data in database:
-        if data["hash"] == record_hash:
+        if data["id"] == record["id"]:
             return True
     return False
 
@@ -41,20 +38,21 @@ def add_record(record):
         print("Invalid data. Entry rejected.")
         return
 
-    if is_redundant(record, database):
+    if is_duplicate(record, database):
         print("Duplicate data found. Entry blocked.")
         return
 
-    record["hash"] = generate_hash(record)
     database.append(record)
     save_data(database)
 
     print("Data added successfully.")
 
 if __name__ == "__main__":
-    sample = {
-        "id": "101",
-        "name": "Sample User",
-        "email": "sample@gmail.com"
-    }
-    add_record(sample)
+    # User input now, not hard-coded sample
+    record = {}
+    record["id"] = input("Enter ID: ")
+    record["name"] = input("Enter Name: ")
+    record["email"] = input("Enter Email: ")
+
+    add_record(record)
+
